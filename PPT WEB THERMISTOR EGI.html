@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presentasi Termistor NTC & PTC</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+
+      :root {
+        --color-red: #ff4136;
+        --color-yellow: #ffdc00;
+        --color-green: #2ecc40;
+        --color-blue: #0074d9;
+        --color-white: #f0f0f0;
+        --color-black: #111;
+      }
+
+      body {
+        font-family: "VT323", monospace;
+        background-color: var(--color-black);
+        color: var(--color-white);
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      /* Efek TV statis */
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4d5eXlzc3OLi4ubm5uVlZWPj4+NjY19fX2JiYl/f39ra2uRkZGZmZlpaWmXl5dvb29xcXGTk5NnZ2c8TV1mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAKnRFWHRDcmVhdGlvbiBUaW1lAE1vbiAwOSBNb3YgMjAxOSAyMzowNzo1NyBHTVQuc69fAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAAB1JREFUeJztlrcWgFAIRIs/f9/39f0/AIAg4vX/49kFprORdJql72a7YwAAAABJRU5ErkJggg==);
+        opacity: 0.08;
+        animation: static 0.1s infinite;
+        pointer-events: none;
+        z-index: 100; /* Pastikan di atas segalanya */
+      }
+
+      @keyframes static {
+        0% {
+          transform: translate(0, 0);
+        }
+        10% {
+          transform: translate(-5px, -5px);
+        }
+        20% {
+          transform: translate(-10px, 5px);
+        }
+        30% {
+          transform: translate(5px, -10px);
+        }
+        40% {
+          transform: translate(-5px, 10px);
+        }
+        50% {
+          transform: translate(-10px, -5px);
+        }
+        60% {
+          transform: translate(10px, 10px);
+        }
+        70% {
+          transform: translate(0, 5px);
+        }
+        80% {
+          transform: translate(5px, 0);
+        }
+        90% {
+          transform: translate(-10px, 0);
+        }
+        100% {
+          transform: translate(0, 0);
+        }
+      }
+
+      .presentation-container {
+        width: 95%;
+        height: 95%;
+        max-width: 1200px;
+        max-height: 800px;
+        border: 4px solid #333;
+        border-radius: 20px;
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(2px);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.5),
+          inset 0 0 15px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+
+      .slide {
+        padding: 40px 50px;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+
+      .star-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+      }
+
+      .slide.active {
+        display: flex;
+        animation: flicker 0.15s ease-in-out;
+      }
+
+      @keyframes flicker {
+        0% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .slide h1 {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        text-shadow: 0 0 5px var(--color-white), 0 0 10px var(--color-red);
+      }
+      .slide h2 {
+        font-size: 3rem;
+        margin-bottom: 25px;
+        color: var(--color-yellow);
+        text-shadow: 0 0 5px var(--color-yellow);
+      }
+      .slide p,
+      .slide li {
+        font-size: 1.8rem;
+        line-height: 1.5;
+        max-width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .slide ul {
+        list-style: none;
+        padding: 0;
+        text-align: center;
+        display: inline-block;
+      }
+
+      .slide ul li::before {
+        content: ">";
+        margin-right: 15px;
+        color: var(--color-green);
+      }
+
+      .comparison-table {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        width: 90%;
+        margin-top: 30px;
+      }
+
+      .table-col h3 {
+        font-size: 2.5rem;
+        color: var(--color-blue);
+        border-bottom: 2px solid var(--color-blue);
+        padding-bottom: 10px;
+      }
+
+      .table-col ul {
+        text-align: center;
+      }
+
+      .color-bars {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 15px;
+        display: flex;
+        z-index: 5;
+      }
+      .color-bar {
+        flex-grow: 1;
+      }
+
+      .navigation {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 20px;
+        z-index: 10;
+      }
+      .nav-button {
+        background: #333;
+        border: 2px solid #555;
+        color: var(--color-white);
+        font-family: "VT323", monospace;
+        font-size: 2rem;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .nav-button:hover {
+        background: #555;
+        border-color: var(--color-white);
+        text-shadow: 0 0 5px var(--color-white);
+      }
+
+      .top-controls {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        z-index: 10;
+      }
+      .slide-counter {
+        font-size: 1.5rem;
+        color: #888;
+      }
+      #fullscreen-toggle {
+        padding: 5px;
+        line-height: 0;
+      }
+      #fullscreen-toggle svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      @keyframes title-pulse {
+        0% {
+          opacity: 1;
+          text-shadow: 0 0 5px var(--color-white), 0 0 10px var(--color-red);
+        }
+        50% {
+          opacity: 0.7;
+          text-shadow: 0 0 15px var(--color-white), 0 0 25px var(--color-red),
+            0 0 35px var(--color-yellow);
+        }
+        100% {
+          opacity: 1;
+          text-shadow: 0 0 5px var(--color-white), 0 0 10px var(--color-red);
+        }
+      }
+      .animated-title-h1 {
+        animation: title-pulse 2.5s ease-in-out infinite;
+      }
+      .animated-title-h2 {
+        color: var(--color-yellow);
+        animation: title-pulse 2.5s ease-in-out infinite 0.5s;
+      }
+
+      .authors-container {
+        margin-top: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 20px;
+        max-width: 80%;
+        perspective: 500px;
+      }
+      .author {
+        font-size: 1.4rem;
+        color: #ccc;
+        opacity: 0;
+        transform: translateY(-250px) rotateZ(-15deg);
+        animation: floatIn 2s ease-out forwards;
+      }
+      .author:nth-child(1) {
+        animation-delay: 1s;
+      }
+      .author:nth-child(2) {
+        animation-delay: 1.4s;
+      }
+      .author:nth-child(3) {
+        animation-delay: 1.8s;
+      }
+      .author:nth-child(4) {
+        animation-delay: 2.2s;
+      }
+      .author:nth-child(5) {
+        animation-delay: 2.6s;
+      }
+      .author:nth-child(6) {
+        animation-delay: 3s;
+      }
+      @keyframes floatIn {
+        0% {
+          transform: translateY(-250px) rotateZ(-20deg) rotateX(90deg);
+          opacity: 0;
+        }
+        60% {
+          transform: translateY(20px) rotateZ(10deg) rotateX(0deg);
+          opacity: 1;
+        }
+        80% {
+          transform: translateY(-10px) rotateZ(-5deg);
+        }
+        100% {
+          transform: translateY(0) rotateZ(0) rotateX(0deg);
+          opacity: 1;
+        }
+      }
+
+      .slide:not(:first-child) h2 {
+        opacity: 0;
+      }
+      .slide.active:not(:first-child) h2 {
+        opacity: 1;
+      }
+      .slide h2 .char {
+        display: inline-block;
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      .slide.active h2 .char {
+        animation: letter-swoop-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+          forwards;
+      }
+      @keyframes letter-swoop-in {
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .slide-content,
+      .content-left,
+      .content-right {
+        opacity: 0;
+      }
+      .slide.active .slide-content {
+        animation: slide-in-from-left 0.8s ease-out forwards 0.5s;
+      }
+      .slide.active .content-left {
+        animation: slide-in-from-left 0.8s ease-out forwards 0.5s;
+      }
+      .slide.active .content-right {
+        animation: slide-in-from-right 0.8s ease-out forwards 0.5s;
+      }
+      @keyframes slide-in-from-left {
+        from {
+          opacity: 0;
+          transform: translateX(-50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes slide-in-from-right {
+        from {
+          opacity: 0;
+          transform: translateX(50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .slide h1 {
+          font-size: 2.5rem;
+        }
+        .slide h2 {
+          font-size: 2rem;
+        }
+        .slide p,
+        .slide li {
+          font-size: 1.2rem;
+          max-width: 95%;
+        }
+        .author {
+          font-size: 1rem;
+        }
+        .authors-container {
+          gap: 5px 10px;
+        }
+        .slide {
+          padding: 20px;
+        }
+        .comparison-table {
+          grid-template-columns: 1fr;
+        }
+        .nav-button {
+          font-size: 1.5rem;
+          padding: 8px 15px;
+        }
+        .top-controls {
+          top: 15px;
+          right: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="presentation-container">
+      <div class="top-controls">
+        <div id="slide-counter" class="slide-counter"></div>
+        <button
+          id="fullscreen-toggle"
+          class="nav-button"
+          title="Toggle Fullscreen"
+        >
+          <svg
+            id="icon-enter-fs"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+            />
+          </svg>
+          <svg
+            id="icon-exit-fs"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="display: none"
+          >
+            <path
+              d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Slide 1: Judul -->
+      <div class="slide active">
+        <canvas class="star-canvas"></canvas>
+        <h1 class="animated-title-h1">Analisis Termistor</h1>
+        <h2 class="animated-title-h2">NTC & PTC</h2>
+        <div class="authors-container">
+          <span class="author">Azmi Aziz</span>
+          <span class="author">M Rifqi Darmawan</span>
+          <span class="author">Salman Alfarisi</span>
+          <span class="author">Rizki Andika</span>
+          <span class="author">M. Egi Nofrizal</span>
+          <span class="author">Zunnur Al Firdausi</span>
+        </div>
+      </div>
+
+      <!-- Slide 2: Apa itu Termistor? -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Apa itu Termistor?</h2>
+        <div class="slide-content">
+          <p>
+            Singkatan dari <strong>THERM</strong>ally sensitive
+            res<strong>ISTOR</strong>.
+          </p>
+          <p>
+            Sebuah komponen pasif yang nilai resistansinya berubah secara
+            signifikan karena perubahan suhu.
+          </p>
+          <ul>
+            <li>Dua Jenis Utama: NTC & PTC</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 3: NTC -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Termistor NTC</h2>
+        <div class="slide-content">
+          <p>
+            <strong>N</strong>egative <strong>T</strong>emperature
+            <strong>C</strong>oefficient
+          </p>
+          <p>
+            Prinsip Kerja: Saat <strong>SUHU NAIK</strong>, nilai
+            <strong>RESISTANSI TURUN</strong>.
+          </p>
+          <ul>
+            <li>Hubungan non-linear (eksponensial).</li>
+            <li>Sangat sensitif, ideal untuk pengukuran suhu presisi.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 4: Cara Kerja NTC -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Bagaimana NTC Bekerja?</h2>
+        <div class="slide-content">
+          <p>Terbuat dari keramik oksida logam (Mangan, Nikel, Kobalt).</p>
+          <p>
+            Energi panas (suhu) melepaskan lebih banyak elektron pembawa muatan,
+            sehingga menurunkan hambatan total material.
+          </p>
+        </div>
+      </div>
+
+      <!-- Slide 5: PTC -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Termistor PTC</h2>
+        <div class="slide-content">
+          <p>
+            <strong>P</strong>ositive <strong>T</strong>emperature
+            <strong>C</strong>oefficient
+          </p>
+          <p>
+            Prinsip Kerja: Saat <strong>SUHU NAIK</strong>, nilai
+            <strong>RESISTANSI NAIK</strong> secara drastis.
+          </p>
+          <ul>
+            <li>Berperilaku seperti sakelar (switch).</li>
+            <li>
+              Resistansi rendah pada suhu normal, melonjak tinggi di atas Suhu
+              Curie.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 6: Cara Kerja PTC -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Bagaimana PTC Bekerja?</h2>
+        <div class="slide-content">
+          <p>Terbuat dari keramik Barium Titanat (BaTiO3).</p>
+          <p>
+            Saat mencapai <strong>Suhu Curie</strong>, struktur kristal material
+            berubah, menciptakan penghalang yang menghambat aliran arus dan
+            menyebabkan resistansi melonjak.
+          </p>
+        </div>
+      </div>
+
+      <!-- Slide 7: Perbandingan -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>NTC vs. PTC</h2>
+        <div class="comparison-table">
+          <div class="content-left">
+            <h3>NTC</h3>
+            <ul>
+              <li>Resistansi turun saat panas</li>
+              <li>Kurva mulus</li>
+              <li>Untuk Mengukur</li>
+            </ul>
+          </div>
+          <div class="content-right">
+            <h3>PTC</h3>
+            <ul>
+              <li>Resistansi naik saat panas</li>
+              <li>Kurva tajam (switch)</li>
+              <li>Untuk Melindungi</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 8: Aplikasi NTC -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Aplikasi NTC</h2>
+        <div class="slide-content">
+          <p>
+            Fokus pada <strong>pengukuran dan kontrol suhu</strong> yang akurat.
+          </p>
+          <ul>
+            <li>Termometer Digital & Termostat AC</li>
+            <li>Sensor Suhu Baterai Kendaraan Listrik (EV)</li>
+            <li>Pembatas Arus Masuk (Inrush Current Limiter)</li>
+            <li>Peralatan Medis (Inkubator, Kateter)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 9: Aplikasi PTC -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Aplikasi PTC</h2>
+        <div class="slide-content">
+          <p>Fokus pada <strong>proteksi dan regulasi</strong> mandiri.</p>
+          <ul>
+            <li>
+              Sekering Otomatis (Self-Resetting Fuse) di Port USB & Catu Daya
+            </li>
+            <li>
+              Elemen Pemanas yang Mengatur Sendiri (Pistol Lem, Pemanas Kursi)
+            </li>
+            <li>Starter Motor AC</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 10: Kesimpulan -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h2>Kesimpulan</h2>
+        <div class="slide-content">
+          <p>
+            <strong>NTC</strong> dioptimalkan untuk
+            <strong>MENGUKUR</strong> suhu secara analog dan presisi.
+          </p>
+          <p>
+            <strong>PTC</strong> direkayasa untuk
+            <strong>BEREAKSI</strong> terhadap ambang batas suhu seperti sakelar
+            digital.
+          </p>
+        </div>
+      </div>
+
+      <!-- Slide 11: Akhir -->
+      <div class="slide">
+        <canvas class="star-canvas"></canvas>
+        <h1>Terima Kasih</h1>
+      </div>
+
+      <!-- Navigasi dan Elemen UI Lainnya -->
+      <div class="navigation">
+        <button id="prevBtn" class="nav-button"><< Prev</button>
+        <button id="nextBtn" class="nav-button">Next >></button>
+      </div>
+
+      <div class="color-bars">
+        <div class="color-bar" style="background-color: var(--color-red)"></div>
+        <div
+          class="color-bar"
+          style="background-color: var(--color-yellow)"
+        ></div>
+        <div
+          class="color-bar"
+          style="background-color: var(--color-green)"
+        ></div>
+        <div
+          class="color-bar"
+          style="background-color: var(--color-blue)"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Setup animasi judul per huruf
+        const animatedHeaders = document.querySelectorAll(
+          ".slide:not(:first-child) h2"
+        );
+        animatedHeaders.forEach((header) => {
+          const text = header.textContent.trim();
+          header.textContent = ""; // Kosongkan teks asli
+          text.split("").forEach((char, index) => {
+            const span = document.createElement("span");
+            span.className = "char";
+            span.textContent = char === " " ? "\u00A0" : char;
+            span.style.animationDelay = `${index * 0.04}s`;
+            header.appendChild(span);
+          });
+        });
+
+        // Konfigurasi rasi bintang yang konsisten untuk semua slide
+        const constellationConfig = {
+          count: 1000,
+          size: { min: 0.3, max: 2.0 },
+          speed: 0.4,
+        };
+
+        const canvases = document.querySelectorAll(".star-canvas");
+        canvases.forEach((canvas) => {
+          initStarfield(canvas, constellationConfig);
+        });
+
+        function initStarfield(canvas, config) {
+          const ctx = canvas.getContext("2d");
+          let stars = [];
+          let animationFrameId;
+
+          function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            stars = [];
+            for (let i = 0; i < config.count; i++) {
+              stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius:
+                  Math.random() * (config.size.max - config.size.min) +
+                  config.size.min,
+                alpha: Math.random() * 0.5 + 0.5,
+                alphaChange: (Math.random() * 0.02 - 0.01) * config.speed,
+              });
+            }
+          }
+
+          function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.shadowBlur = 7;
+            ctx.shadowColor = "white";
+
+            stars.forEach((star) => {
+              star.alpha += star.alphaChange;
+              if (star.alpha <= 0.2 || star.alpha >= 1) {
+                star.alphaChange *= -1;
+              }
+
+              ctx.beginPath();
+              ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+              ctx.fill();
+            });
+            animationFrameId = requestAnimationFrame(animate);
+          }
+
+          resizeCanvas();
+          animate();
+
+          window.addEventListener("resize", () => {
+            cancelAnimationFrame(animationFrameId);
+            resizeCanvas();
+            animate();
+          });
+        }
+
+        // Fullscreen Toggle Logic
+        const fullscreenBtn = document.getElementById("fullscreen-toggle");
+        const enterIcon = document.getElementById("icon-enter-fs");
+        const exitIcon = document.getElementById("icon-exit-fs");
+        const presentationContainer = document.querySelector(
+          ".presentation-container"
+        );
+
+        function toggleFullScreen() {
+          if (
+            !document.fullscreenElement &&
+            !document.mozFullScreenElement &&
+            !document.webkitFullscreenElement &&
+            !document.msFullscreenElement
+          ) {
+            if (presentationContainer.requestFullscreen) {
+              presentationContainer.requestFullscreen();
+            } else if (presentationContainer.mozRequestFullScreen) {
+              // Firefox
+              presentationContainer.mozRequestFullScreen();
+            } else if (presentationContainer.webkitRequestFullscreen) {
+              // Chrome, Safari and Opera
+              presentationContainer.webkitRequestFullscreen();
+            } else if (presentationContainer.msRequestFullscreen) {
+              // IE/Edge
+              presentationContainer.msRequestFullscreen();
+            }
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+              // Firefox
+              document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+              // Chrome, Safari and Opera
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              // IE/Edge
+              document.msExitFullscreen();
+            }
+          }
+        }
+
+        fullscreenBtn.addEventListener("click", toggleFullScreen);
+
+        function updateFullscreenIcon() {
+          if (
+            document.fullscreenElement ||
+            document.mozFullScreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement
+          ) {
+            enterIcon.style.display = "none";
+            exitIcon.style.display = "inline-block";
+          } else {
+            enterIcon.style.display = "inline-block";
+            exitIcon.style.display = "none";
+          }
+        }
+
+        document.addEventListener("fullscreenchange", updateFullscreenIcon);
+        document.addEventListener(
+          "webkitfullscreenchange",
+          updateFullscreenIcon
+        );
+        document.addEventListener("mozfullscreenchange", updateFullscreenIcon);
+        document.addEventListener("MSFullscreenChange", updateFullscreenIcon);
+      });
+
+      // Script untuk mengontrol navigasi slide
+      const slides = document.querySelectorAll(".slide");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const slideCounter = document.getElementById("slide-counter");
+
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      function showSlide(index) {
+        if (index >= totalSlides) {
+          currentSlide = 0;
+        } else if (index < 0) {
+          currentSlide = totalSlides - 1;
+        } else {
+          currentSlide = index;
+        }
+
+        slides.forEach((slide) => slide.classList.remove("active"));
+        slides[currentSlide].classList.add("active");
+        slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+      }
+
+      nextBtn.addEventListener("click", () => showSlide(currentSlide + 1));
+      prevBtn.addEventListener("click", () => showSlide(currentSlide - 1));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") {
+          showSlide(currentSlide + 1);
+        } else if (e.key === "ArrowLeft") {
+          showSlide(currentSlide - 1);
+        }
+      });
+
+      showSlide(currentSlide);
+    </script>
+  </body>
+</html>
